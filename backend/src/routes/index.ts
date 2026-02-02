@@ -2,11 +2,17 @@ import { Router, Request, Response } from 'express';
 import prisma from '../config/db';
 import { getRedis } from '../config/redis';
 import authRoutes from './auth.routes';
+import categoryRoutes from './category.routes';
+import productRoutes from './product.routes';
 
 const router = Router();
 
 // Auth routes
 router.use('/auth', authRoutes);
+
+// Catalog routes
+router.use('/categories', categoryRoutes);
+router.use('/products', productRoutes);
 
 router.get('/health', async (_req: Request, res: Response) => {
   const healthcheck = {
