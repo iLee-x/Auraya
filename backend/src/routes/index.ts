@@ -4,6 +4,7 @@ import { getRedis } from '../config/redis';
 import authRoutes from './auth.routes';
 import categoryRoutes from './category.routes';
 import productRoutes from './product.routes';
+import cartRoutes from './cart.routes';
 
 const router = Router();
 
@@ -13,6 +14,9 @@ router.use('/auth', authRoutes);
 // Catalog routes
 router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
+
+// Cart routes
+router.use('/cart', cartRoutes);
 
 router.get('/health', async (_req: Request, res: Response) => {
   const healthcheck = {
