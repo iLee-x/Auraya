@@ -1,34 +1,20 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: auraya_postgres
-    environment:
-      POSTGRES_USER: auraya
-      POSTGRES_PASSWORD: auraya_dev_password
-      POSTGRES_DB: auraya_dev
+  backend:
+    build: ./backend
+    container_name: auraya_backend
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U auraya -d auraya_dev"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - "3001:3001"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    container_name: auraya_redis
+  frontend:
+    build: ./frontend
+    container_name: auraya_frontend
     ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  postgres_data:
-  redis_data:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env.local
+    depends_on:
+      - backend
+    restart: unless-stopped

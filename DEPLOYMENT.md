@@ -56,6 +56,7 @@ FRONTEND_URL=https://your-app.vercel.app  # Update after Vercel deploy
 ```
 
 Optional (for image uploads):
+
 ```env
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
@@ -70,6 +71,7 @@ Railway will automatically deploy. Your backend URL will be:
 ### 2.6 Run Database Seed (Optional)
 
 In Railway, open the backend service shell and run:
+
 ```bash
 npx prisma db push
 npx ts-node prisma/seed.ts
@@ -133,23 +135,26 @@ docker-compose -f docker-compose.prod.yml exec backend npx ts-node prisma/seed.t
 
 After seeding the database:
 
-| Role   | Email               | Password   |
-|--------|---------------------|------------|
-| Admin  | admin@auraya.com    | admin123   |
-| Seller | seller@auraya.com   | seller123  |
+| Role   | Email             | Password  |
+| ------ | ----------------- | --------- |
+| Admin  | admin@auraya.com  | admin123  |
+| Seller | seller@auraya.com | seller123 |
 
 ---
 
 ## Troubleshooting
 
 ### CORS Errors
+
 - Ensure `FRONTEND_URL` in Railway matches your Vercel URL exactly
 - Check that credentials are being sent (`credentials: 'include'`)
 
 ### Database Connection
+
 - Verify `DATABASE_URL` is set correctly in Railway
 - Run `npx prisma migrate deploy` if tables don't exist
 
 ### Build Failures
+
 - Check Node.js version (requires 18+)
 - Ensure all dependencies are in package.json

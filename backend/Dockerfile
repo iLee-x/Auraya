@@ -19,6 +19,9 @@ RUN npx prisma generate
 # Build TypeScript
 RUN npm run build
 
+# Build seed script
+RUN npx tsc prisma/seed.ts --outDir dist/prisma --esModuleInterop --skipLibCheck
+
 # Production stage
 FROM node:20-alpine AS runner
 
