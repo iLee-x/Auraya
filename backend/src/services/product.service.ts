@@ -100,11 +100,25 @@ export const productService = {
     }
 
     if (categorySlug) {
-      where.categories = {
-        some: {
-          slug: categorySlug,
-        },
-      };
+      // Find the category and all its children so parent categories
+      // also return products assigned to subcategories
+      const category = await prisma.category.findUnique({
+        where: { slug: categorySlug },
+        include: { children: { select: { slug: true } } },
+      });
+
+      if (category) {
+        const slugs = [category.slug, ...category.children.map(c => c.slug)];
+        where.categories = {
+          some: {
+            slug: { in: slugs },
+          },
+        };
+      } else {
+        where.categories = {
+          some: { slug: categorySlug },
+        };
+      }
     }
 
     if (search) {
