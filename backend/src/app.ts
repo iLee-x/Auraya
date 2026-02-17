@@ -10,7 +10,8 @@ import swaggerDocument from './config/swagger';
 
 const app: Application = express();
 
-// Security middleware
+// Security middleware — disable CSP for Swagger UI route
+app.use('/api-docs', helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(helmet());
 app.use(
   cors({
@@ -25,7 +26,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Swagger docs
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+  swaggerOptions: {
+    withCredentials: true,
+  },
+}));
 
 // API routes
 app.use(routes);
