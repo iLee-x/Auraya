@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -11,6 +12,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function CartPageContent() {
+  const router = useRouter();
   const items = useAppSelector(selectCartItems);
   const total = useAppSelector(selectCartTotal);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -155,7 +157,7 @@ export default function CartPageContent() {
           <span>Total</span>
           <span>${total.toFixed(2)}</span>
         </div>
-        <Button className="w-full" size="lg">
+        <Button className="w-full" size="lg" onClick={() => router.push("/checkout")}>
           Proceed to Checkout
         </Button>
       </div>

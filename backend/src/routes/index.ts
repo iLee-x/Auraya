@@ -5,6 +5,8 @@ import authRoutes from './auth.routes';
 import categoryRoutes from './category.routes';
 import productRoutes from './product.routes';
 import cartRoutes from './cart.routes';
+import addressRoutes from './address.routes';
+import orderRoutes from './order.routes';
 
 const router = Router();
 
@@ -17,6 +19,12 @@ router.use('/products', productRoutes);
 
 // Cart routes
 router.use('/cart', cartRoutes);
+
+// Address routes
+router.use('/addresses', addressRoutes);
+
+// Order routes
+router.use('/orders', orderRoutes);
 
 router.get('/health', async (_req: Request, res: Response) => {
   const healthcheck = {

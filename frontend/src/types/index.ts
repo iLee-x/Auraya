@@ -69,3 +69,48 @@ export interface Pagination {
   total: number;
   totalPages: number;
 }
+
+export interface Address {
+  id: string;
+  userId: string;
+  recipientName: string;
+  phone: string | null;
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+}
+
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  productId: string | null;
+  productName: string;
+  productSlug: string;
+  productPrice: string;
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  userId: string | null;
+  shippingAddress: {
+    recipientName: string;
+    phone: string | null;
+    addressLine1: string;
+    addressLine2: string | null;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+  status: "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+  totalAmount: string;
+  stripePaymentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: OrderItem[];
+}
