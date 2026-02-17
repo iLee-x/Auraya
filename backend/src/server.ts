@@ -8,6 +8,7 @@ const server = app.listen(config.port, () => {
 
   if (isDev) {
     console.log(`Health check: http://localhost:${config.port}/health`);
+    console.log(`Swagger docs: http://localhost:${config.port}/api-docs`);
   }
 });
 
