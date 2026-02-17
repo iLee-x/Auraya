@@ -22,6 +22,14 @@ export function useAuth() {
     },
   });
 
+  const registerMutation = useMutation({
+    mutationFn: (input: { email: string; password: string; name?: string }) =>
+      api.post<{ user: User }>("/auth/register", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    },
+  });
+
   const logoutMutation = useMutation({
     mutationFn: () => api.post<{ message: string }>("/auth/logout"),
     onSuccess: () => {
@@ -34,6 +42,7 @@ export function useAuth() {
     isLoading: userQuery.isLoading,
     isAuthenticated: !!userQuery.data?.user,
     login: loginMutation.mutateAsync,
+    register: registerMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
   };
 }
