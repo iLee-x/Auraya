@@ -80,6 +80,15 @@ export const authService = {
     };
   },
 
+  async updateProfile(userId: string, data: { name: string }): Promise<SafeUser> {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { name: data.name },
+    });
+
+    return excludePassword(user);
+  },
+
   async getMe(userId: string): Promise<SafeUser> {
     const user = await prisma.user.findUnique({
       where: { id: userId },

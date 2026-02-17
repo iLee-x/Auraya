@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/auth.service';
-import { RegisterInput, LoginInput } from '../validators/auth.validator';
+import { RegisterInput, LoginInput, UpdateProfileInput } from '../validators/auth.validator';
 import { config, isProd } from '../config';
 
 const TOKEN_COOKIE_NAME = 'token';
@@ -65,6 +65,23 @@ export const authController = {
       success: true,
       data: { message: 'Logged out successfully' },
     });
+  },
+
+  async updateProfile(
+    req: Request<unknown, unknown, UpdateProfileInput>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const user = await authService.updateProfile(req.user!.userId, req.body);
+
+      res.status(200).json({
+        success: true,
+        data: { user },
+      });
+    } catch (error) {
+      next(error);
+    }
   },
 
   async me(req: Request, res: Response, next: NextFunction): Promise<void> {
