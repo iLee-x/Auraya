@@ -4,12 +4,31 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Pencil, Trash2, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  ChevronRight,
+  ChevronDown,
+  FolderOpen,
+  Folder,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import type { Category } from "@/types";
+
+interface CategoryTreeNode {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  parentId: string | null;
+  children?: CategoryTreeNode[];
+}
 
 interface CategoryFormData {
   name: string;
@@ -28,15 +47,28 @@ export default function AdminCategoriesContent() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<CategoryFormData>(emptyForm);
   const [error, setError] = useState("");
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin", "categories"],
+  // Tree data for display
+  const { data: treeData, isLoading } = useQuery({
+    queryKey: ["admin", "categories", "tree"],
+    queryFn: () => api.get<{ categories: CategoryTreeNode[] }>("/categories"),
+    enabled: isAuthenticated && user?.role === "ADMIN",
+  });
+
+  // Flat data for parent select in form
+  const { data: flatData } = useQuery({
+    queryKey: ["admin", "categories", "flat"],
     queryFn: () =>
       api.get<{ categories: Category[] }>("/categories", {
         params: { flat: "true" },
       }),
     enabled: isAuthenticated && user?.role === "ADMIN",
   });
+
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+  };
 
   const createMutation = useMutation({
     mutationFn: (data: CategoryFormData) =>
@@ -46,7 +78,7 @@ export default function AdminCategoriesContent() {
         parentId: data.parentId || undefined,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+      invalidateAll();
       resetForm();
     },
   });
@@ -59,19 +91,18 @@ export default function AdminCategoriesContent() {
         parentId: data.parentId || null,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+      invalidateAll();
       resetForm();
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/categories/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
-    },
+    onSuccess: invalidateAll,
   });
 
-  const categories = data?.categories ?? [];
+  const treeCategories = treeData?.categories ?? [];
+  const flatCategories = flatData?.categories ?? [];
 
   const resetForm = () => {
     setForm(emptyForm);
@@ -80,14 +111,14 @@ export default function AdminCategoriesContent() {
     setError("");
   };
 
-  const startCreate = () => {
-    setForm(emptyForm);
+  const startCreate = (parentId: string | null = null) => {
+    setForm({ ...emptyForm, parentId });
     setEditingId(null);
     setShowForm(true);
     setError("");
   };
 
-  const startEdit = (cat: Category) => {
+  const startEdit = (cat: CategoryTreeNode) => {
     setForm({
       name: cat.name,
       description: cat.description ?? "",
@@ -119,9 +150,21 @@ export default function AdminCategoriesContent() {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (window.confirm(`Delete category "${name}"?`)) {
+    if (window.confirm(`Delete category "${name}"? Children will become top-level.`)) {
       deleteMutation.mutate(id);
     }
+  };
+
+  const toggleCollapse = (id: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   if (authLoading) {
@@ -145,7 +188,7 @@ export default function AdminCategoriesContent() {
           <h1 className="text-2xl font-bold">Categories</h1>
         </div>
         {!showForm && (
-          <Button className="rounded-full" onClick={startCreate}>
+          <Button className="rounded-full" onClick={() => startCreate(null)}>
             <Plus className="h-4 w-4 mr-1" />
             New Category
           </Button>
@@ -199,10 +242,10 @@ export default function AdminCategoriesContent() {
                     parentId: e.target.value || null,
                   }))
                 }
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
                 <option value="">None (Top-level)</option>
-                {categories
+                {flatCategories
                   .filter((c) => c.id !== editingId)
                   .map((c) => (
                     <option key={c.id} value={c.id}>
@@ -239,54 +282,156 @@ export default function AdminCategoriesContent() {
 
       {isLoading ? (
         <p className="text-center py-12 text-muted-foreground">Loading...</p>
-      ) : categories.length === 0 ? (
+      ) : treeCategories.length === 0 ? (
         <p className="text-center py-12 text-muted-foreground">
           No categories yet.
         </p>
       ) : (
-        <div className="space-y-2">
-          {categories.map((cat) => (
+        <div className="border rounded-lg overflow-hidden">
+          <CategoryTree
+            nodes={treeCategories}
+            depth={0}
+            collapsed={collapsed}
+            onToggle={toggleCollapse}
+            onEdit={startEdit}
+            onDelete={handleDelete}
+            onAddChild={(parentId) => startCreate(parentId)}
+            isDeleting={deleteMutation.isPending}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CategoryTree({
+  nodes,
+  depth,
+  collapsed,
+  onToggle,
+  onEdit,
+  onDelete,
+  onAddChild,
+  isDeleting,
+}: {
+  nodes: CategoryTreeNode[];
+  depth: number;
+  collapsed: Set<string>;
+  onToggle: (id: string) => void;
+  onEdit: (cat: CategoryTreeNode) => void;
+  onDelete: (id: string, name: string) => void;
+  onAddChild: (parentId: string) => void;
+  isDeleting: boolean;
+}) {
+  return (
+    <div>
+      {nodes.map((node, index) => {
+        const hasChildren = node.children && node.children.length > 0;
+        const isCollapsed = collapsed.has(node.id);
+        const isLast = index === nodes.length - 1;
+
+        return (
+          <div key={node.id}>
             <div
-              key={cat.id}
-              className="flex items-center justify-between border rounded-lg p-4"
+              className={`flex items-center gap-2 px-4 py-3 hover:bg-gray-50 transition-colors group ${
+                !isLast || (hasChildren && !isCollapsed) ? "border-b" : ""
+              }`}
+              style={{ paddingLeft: `${depth * 28 + 16}px` }}
             >
-              <div>
-                <p className="font-medium">{cat.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  /{cat.slug}
-                  {cat.parent && (
-                    <span> &middot; Parent: {cat.parent.name}</span>
-                  )}
-                </p>
-                {cat.description && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {cat.description}
-                  </p>
+              {/* Tree connector + expand/collapse */}
+              {depth > 0 && (
+                <div className="w-4 h-px bg-gray-300 flex-shrink-0 -ml-2" />
+              )}
+
+              <button
+                type="button"
+                className={`flex-shrink-0 p-0.5 rounded transition-colors ${
+                  hasChildren
+                    ? "hover:bg-gray-200 cursor-pointer"
+                    : "cursor-default"
+                }`}
+                onClick={() => hasChildren && onToggle(node.id)}
+              >
+                {hasChildren ? (
+                  isCollapsed ? (
+                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                  )
+                ) : (
+                  <span className="inline-block w-4" />
+                )}
+              </button>
+
+              {/* Folder icon */}
+              {hasChildren && !isCollapsed ? (
+                <FolderOpen className="h-4 w-4 text-amber-500 flex-shrink-0" />
+              ) : (
+                <Folder className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              )}
+
+              {/* Category info */}
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium">{node.name}</span>
+                <span className="text-xs text-muted-foreground ml-2">
+                  /{node.slug}
+                </span>
+                {node.description && (
+                  <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">
+                    — {node.description}
+                  </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
+
+              {/* Actions */}
+              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
-                  onClick={() => startEdit(cat)}
+                  className="h-7 w-7"
+                  title="Add child category"
+                  onClick={() => onAddChild(node.id)}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Plus className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-red-500 hover:text-red-600"
-                  disabled={deleteMutation.isPending}
-                  onClick={() => handleDelete(cat.id, cat.name)}
+                  className="h-7 w-7"
+                  title="Edit category"
+                  onClick={() => onEdit(node)}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-red-500 hover:text-red-600"
+                  title="Delete category"
+                  disabled={isDeleting}
+                  onClick={() => onDelete(node.id, node.name)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+
+            {/* Children */}
+            {hasChildren && !isCollapsed && (
+              <CategoryTree
+                nodes={node.children!}
+                depth={depth + 1}
+                collapsed={collapsed}
+                onToggle={onToggle}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onAddChild={onAddChild}
+                isDeleting={isDeleting}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
