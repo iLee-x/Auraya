@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authController } from '../controllers/auth.controller';
 import { authenticate } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
-import { registerSchema, loginSchema, updateProfileSchema } from '../validators/auth.validator';
+import { registerSchema, loginSchema, googleLoginSchema, updateProfileSchema } from '../validators/auth.validator';
 
 const router = Router();
 
@@ -11,6 +11,9 @@ router.post('/register', validate(registerSchema), authController.register);
 
 // POST /auth/login
 router.post('/login', validate(loginSchema), authController.login);
+
+// POST /auth/google
+router.post('/google', validate(googleLoginSchema), authController.googleLogin);
 
 // POST /auth/logout
 router.post('/logout', authController.logout);

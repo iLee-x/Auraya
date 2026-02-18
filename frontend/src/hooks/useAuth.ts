@@ -30,6 +30,15 @@ export function useAuth() {
     },
   });
 
+  const googleLoginMutation = useMutation({
+    mutationFn: (idToken: string) =>
+      api.post<{ user: User }>("/auth/google", { idToken }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+
   const logoutMutation = useMutation({
     mutationFn: () => api.post<{ message: string }>("/auth/logout"),
     onSuccess: () => {
@@ -43,6 +52,7 @@ export function useAuth() {
     isAuthenticated: !!userQuery.data?.user,
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
+    googleLogin: googleLoginMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
   };
 }

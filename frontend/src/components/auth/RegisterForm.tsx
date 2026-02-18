@@ -6,11 +6,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function RegisterForm() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -103,13 +104,25 @@ export default function RegisterForm() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" className="rounded-full h-11">
-          Google
-        </Button>
-        <Button variant="outline" className="rounded-full h-11">
-          Apple
-        </Button>
+      <div className="flex justify-center">
+        <GoogleLogin
+          onSuccess={async (response) => {
+            if (!response.credential) return;
+            try {
+              await googleLogin(response.credential);
+              toast.success("Account created with Google");
+              router.push("/");
+            } catch (err) {
+              const message =
+                err instanceof Error ? err.message : "Google sign-up failed";
+              setError(message);
+              toast.error(message);
+            }
+          }}
+          onError={() => {
+            toast.error("Google sign-up failed");
+          }}
+        />
       </div>
 
       <p className="text-center text-sm text-gray-500">

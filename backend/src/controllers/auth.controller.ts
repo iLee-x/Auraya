@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/auth.service';
-import { RegisterInput, LoginInput, UpdateProfileInput } from '../validators/auth.validator';
+import { RegisterInput, LoginInput, GoogleLoginInput, UpdateProfileInput } from '../validators/auth.validator';
 import { config, isProd } from '../config';
 
 const TOKEN_COOKIE_NAME = 'token';
@@ -42,6 +42,25 @@ export const authController = {
   ): Promise<void> {
     try {
       const { user, token } = await authService.login(req.body);
+
+      setTokenCookie(res, token);
+
+      res.status(200).json({
+        success: true,
+        data: { user },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async googleLogin(
+    req: Request<unknown, unknown, GoogleLoginInput>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { user, token } = await authService.googleLogin(req.body);
 
       setTokenCookie(res, token);
 

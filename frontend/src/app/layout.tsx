@@ -5,6 +5,7 @@ import StoreProvider from "@/providers/StoreProvider";
 import QueryProvider from "@/providers/QueryProvider";
 import Header from "@/components/layout/Header";
 import { Toaster } from "@/components/ui/sonner";
+import GoogleAuthProviderWrapper from "@/providers/GoogleAuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,13 +32,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <StoreProvider>
-          <QueryProvider>
-            <Header />
-            <main className="min-h-screen">{children}</main>
-            <Toaster />
-          </QueryProvider>
-        </StoreProvider>
+        <GoogleAuthProviderWrapper>
+          <StoreProvider>
+            <QueryProvider>
+              <Header />
+              <main className="min-h-screen">{children}</main>
+              <Toaster />
+            </QueryProvider>
+          </StoreProvider>
+        </GoogleAuthProviderWrapper>
       </body>
     </html>
   );
