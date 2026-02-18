@@ -8,7 +8,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Package, MapPin, LogOut, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Package,
+  MapPin,
+  LogOut,
+  Pencil,
+  Plus,
+  Trash2,
+  ShoppingBag,
+  FolderTree,
+  ClipboardList,
+} from "lucide-react";
 import AddressForm from "./AddressForm";
 import type { Address } from "@/types";
 
@@ -290,6 +300,40 @@ export default function AccountPageContent() {
             <span className="text-sm font-medium">My Orders</span>
           </Link>
         </div>
+
+        {user.role === "ADMIN" && (
+          <>
+            <div className="flex items-center gap-2 mt-6 mb-3">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Admin
+              </span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+            <div className="space-y-2">
+              <Link
+                href="/account/products"
+                className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                <ShoppingBag className="h-5 w-5 text-gray-500" />
+                <span className="text-sm font-medium">Manage Products</span>
+              </Link>
+              <Link
+                href="/account/categories"
+                className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                <FolderTree className="h-5 w-5 text-gray-500" />
+                <span className="text-sm font-medium">Manage Categories</span>
+              </Link>
+              <Link
+                href="/account/orders"
+                className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                <ClipboardList className="h-5 w-5 text-gray-500" />
+                <span className="text-sm font-medium">All Orders</span>
+              </Link>
+            </div>
+          </>
+        )}
       </section>
 
       {/* Logout */}
