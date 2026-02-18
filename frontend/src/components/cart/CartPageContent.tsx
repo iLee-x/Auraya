@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 import { useAppSelector } from "@/lib/store";
 import { selectCartItems, selectCartTotal } from "@/lib/store/slices/cartSlice";
 import { useCart } from "@/hooks/useCart";
@@ -83,12 +84,16 @@ export default function CartPageContent() {
                   size="icon"
                   className="h-8 w-8"
                   disabled={item.quantity <= 1 || isUpdatingItem}
-                  onClick={() =>
-                    updateItem({
-                      itemId: item.id,
-                      quantity: item.quantity - 1,
-                    })
-                  }
+                  onClick={async () => {
+                    try {
+                      await updateItem({
+                        itemId: item.id,
+                        quantity: item.quantity - 1,
+                      });
+                    } catch {
+                      toast.error("Failed to update quantity");
+                    }
+                  }}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -100,12 +105,16 @@ export default function CartPageContent() {
                   disabled={
                     item.quantity >= item.product.stock || isUpdatingItem
                   }
-                  onClick={() =>
-                    updateItem({
-                      itemId: item.id,
-                      quantity: item.quantity + 1,
-                    })
-                  }
+                  onClick={async () => {
+                    try {
+                      await updateItem({
+                        itemId: item.id,
+                        quantity: item.quantity + 1,
+                      });
+                    } catch {
+                      toast.error("Failed to update quantity");
+                    }
+                  }}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -120,7 +129,14 @@ export default function CartPageContent() {
                 size="icon"
                 className="text-destructive"
                 disabled={isRemovingItem}
-                onClick={() => removeItem(item.id)}
+                onClick={async () => {
+                  try {
+                    await removeItem(item.id);
+                    toast.success("Item removed from cart");
+                  } catch {
+                    toast.error("Failed to remove item");
+                  }
+                }}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -131,7 +147,14 @@ export default function CartPageContent() {
           variant="outline"
           className="text-destructive"
           disabled={isClearingCart}
-          onClick={() => clearCart()}
+          onClick={async () => {
+            try {
+              await clearCart();
+              toast.success("Cart cleared");
+            } catch {
+              toast.error("Failed to clear cart");
+            }
+          }}
         >
           Clear Cart
         </Button>

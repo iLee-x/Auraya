@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function RegisterForm() {
@@ -22,9 +23,12 @@ export default function RegisterForm() {
     setLoading(true);
     try {
       await register({ email, password, name: name || undefined });
+      toast.success("Account created successfully");
       router.push("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      const message = err instanceof Error ? err.message : "Registration failed";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

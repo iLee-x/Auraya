@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 import { useAppSelector, useAppDispatch } from "@/lib/store";
 import { selectCartItems, selectCartTotal } from "@/lib/store/slices/cartSlice";
 import { setCartSheetOpen } from "@/lib/store/slices/uiSlice";
@@ -94,12 +95,16 @@ export default function CartSheet() {
                             size="icon"
                             className="h-7 w-7 rounded-full"
                             disabled={item.quantity <= 1 || isUpdatingItem}
-                            onClick={() =>
-                              updateItem({
-                                itemId: item.id,
-                                quantity: item.quantity - 1,
-                              })
-                            }
+                            onClick={async () => {
+                              try {
+                                await updateItem({
+                                  itemId: item.id,
+                                  quantity: item.quantity - 1,
+                                });
+                              } catch {
+                                toast.error("Failed to update quantity");
+                              }
+                            }}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
@@ -113,12 +118,16 @@ export default function CartSheet() {
                             disabled={
                               item.quantity >= item.product.stock || isUpdatingItem
                             }
-                            onClick={() =>
-                              updateItem({
-                                itemId: item.id,
-                                quantity: item.quantity + 1,
-                              })
-                            }
+                            onClick={async () => {
+                              try {
+                                await updateItem({
+                                  itemId: item.id,
+                                  quantity: item.quantity + 1,
+                                });
+                              } catch {
+                                toast.error("Failed to update quantity");
+                              }
+                            }}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -128,7 +137,14 @@ export default function CartSheet() {
                           size="icon"
                           className="h-8 w-8 text-gray-400 hover:text-red-500"
                           disabled={isRemovingItem}
-                          onClick={() => removeItem(item.id)}
+                          onClick={async () => {
+                            try {
+                              await removeItem(item.id);
+                              toast.success("Item removed from cart");
+                            } catch {
+                              toast.error("Failed to remove item");
+                            }
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

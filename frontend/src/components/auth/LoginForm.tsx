@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginForm() {
@@ -21,9 +22,12 @@ export default function LoginForm() {
     setLoading(true);
     try {
       await login({ email, password });
+      toast.success("Signed in successfully");
       router.push("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      const message = err instanceof Error ? err.message : "Login failed";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

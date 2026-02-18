@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Minus, Plus, Star, ShoppingBag, Heart, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import type { Product } from "@/types";
@@ -23,9 +24,17 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const reviewCount = 127;
 
   const handleAddToCart = async () => {
-    if (!isAuthenticated) return;
-    await addItem({ productId: product.id, quantity });
-    setQuantity(1);
+    if (!isAuthenticated) {
+      toast.error("Please sign in to add items to cart");
+      return;
+    }
+    try {
+      await addItem({ productId: product.id, quantity });
+      toast.success(`${product.name} added to cart`);
+      setQuantity(1);
+    } catch {
+      toast.error("Failed to add item to cart");
+    }
   };
 
   return (

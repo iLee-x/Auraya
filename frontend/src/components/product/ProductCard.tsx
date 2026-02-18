@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import type { Product } from "@/types";
@@ -20,8 +21,16 @@ export default function ProductCard({ product, isNew = false }: ProductCardProps
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isAuthenticated) return;
-    await addItem({ productId: product.id, quantity: 1 });
+    if (!isAuthenticated) {
+      toast.error("Please sign in to add items to cart");
+      return;
+    }
+    try {
+      await addItem({ productId: product.id, quantity: 1 });
+      toast.success(`${product.name} added to cart`);
+    } catch {
+      toast.error("Failed to add item to cart");
+    }
   };
 
   // Mock rating data (in real app, this would come from the backend)
