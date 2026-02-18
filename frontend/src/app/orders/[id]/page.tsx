@@ -7,7 +7,7 @@ export default async function OrderDetailPage({
 }) {
   const { id } = await params;
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50/50">
       <OrderDetailContent orderId={id} />
     </div>
   );
