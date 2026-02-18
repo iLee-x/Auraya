@@ -23,11 +23,11 @@ export default function Header() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b">
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight">✦ Auraya</span>
+          <span className="text-xl font-bold tracking-tight">Auraya</span>
         </Link>
 
         {/* Navigation */}
@@ -36,7 +36,7 @@ export default function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-xs font-medium tracking-wide hover:text-primary transition-colors"
+              className="text-[11px] font-medium tracking-[0.1em] text-gray-600 hover:text-gray-900 transition-colors"
             >
               {link.label}
             </Link>
@@ -45,19 +45,19 @@ export default function Header() {
 
         {/* Right Icons */}
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-9 w-9">
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-600 hover:text-gray-900">
             <Search className="h-4 w-4" />
           </Button>
 
           {isAuthenticated ? (
             <Link href="/account">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-600 hover:text-gray-900">
                 <User className="h-4 w-4" />
               </Button>
             </Link>
           ) : (
             <Link href="/login">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-600 hover:text-gray-900">
                 <User className="h-4 w-4" />
               </Button>
             </Link>
@@ -66,12 +66,12 @@ export default function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 relative"
+            className="h-9 w-9 relative text-gray-600 hover:text-gray-900"
             onClick={() => dispatch(setCartSheetOpen(true))}
           >
             <ShoppingBag className="h-4 w-4" />
             {cartItemCount > 0 && (
-              <Badge className="absolute -right-1 -top-1 h-4 w-4 rounded-full p-0 text-[10px] flex items-center justify-center bg-primary text-white">
+              <Badge className="absolute -right-1 -top-1 h-4 w-4 rounded-full p-0 text-[10px] flex items-center justify-center bg-gray-900 text-white">
                 {cartItemCount}
               </Badge>
             )}

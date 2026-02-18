@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Star, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,75 +40,71 @@ export default function ProductCard({ product, isNew = false }: ProductCardProps
     <div className="group flex flex-col">
       {/* Image Container */}
       <Link href={`/products/${product.slug}`} className="relative block">
-        <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+        <div className="aspect-[3/4] relative overflow-hidden rounded-xl bg-gray-50">
           {product.images[0] ? (
             <Image
               src={product.images[0].url}
               alt={product.name}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-gray-400 text-sm">No image</span>
+              <span className="text-gray-300 text-sm">No image</span>
             </div>
           )}
 
           {/* New Badge */}
           {isNew && (
-            <span className="absolute top-3 left-3 bg-primary text-white text-[10px] font-semibold px-2 py-1 rounded-full">
-              New
+            <span className="absolute top-3 left-3 bg-gray-900 text-white text-[10px] font-semibold px-3 py-1 rounded-full tracking-wide">
+              NEW
             </span>
           )}
+
+          {/* Quick Add Overlay */}
+          <button
+            className="absolute bottom-3 right-3 h-9 w-9 rounded-full bg-white shadow-md flex items-center justify-center opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-gray-900 hover:text-white text-gray-700 disabled:opacity-50"
+            disabled={isAddingItem || product.stock === 0 || !isAuthenticated}
+            onClick={handleAddToCart}
+          >
+            <ShoppingBag className="h-4 w-4" />
+          </button>
         </div>
       </Link>
 
       {/* Product Info */}
-      <div className="mt-3 space-y-2">
+      <div className="mt-4 space-y-1.5">
+        {/* Product Name */}
+        <Link href={`/products/${product.slug}`}>
+          <h3 className="text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors line-clamp-1">
+            {product.name}
+          </h3>
+        </Link>
+
         {/* Rating */}
-        <div className="flex items-center gap-1">
-          <div className="flex items-center">
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-px">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
                 className={`h-3 w-3 ${
                   star <= rating
-                    ? "fill-yellow-400 text-yellow-400"
+                    ? "fill-amber-400 text-amber-400"
                     : "fill-gray-200 text-gray-200"
                 }`}
               />
             ))}
           </div>
-          <span className="text-xs text-gray-500">{reviewCount} REVIEWS</span>
+          <span className="text-[11px] text-gray-400">({reviewCount})</span>
         </div>
-
-        {/* Product Name */}
-        <Link href={`/products/${product.slug}`}>
-          <h3 className="text-sm font-medium text-gray-900 hover:underline line-clamp-2">
-            {product.name}
-          </h3>
-        </Link>
 
         {/* Price */}
-        <p className="text-sm text-gray-500">
-          FROM ${parseFloat(product.price).toFixed(0)}
+        <p className="text-sm font-semibold text-gray-900">
+          ${parseFloat(product.price).toFixed(2)}
         </p>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 pt-1">
-          <Button
-            size="sm"
-            className="bg-primary hover:bg-primary/90 text-white text-[10px] font-semibold px-3 h-7 rounded-full"
-            disabled={isAddingItem || product.stock === 0 || !isAuthenticated}
-            onClick={handleAddToCart}
-          >
-            SHOP NOW
-          </Button>
-          <span className="text-[10px] text-gray-400">+ CODE: SAVE20</span>
-        </div>
-
         {product.stock === 0 && (
-          <p className="text-xs text-red-500">Out of stock</p>
+          <p className="text-xs font-medium text-red-500">Out of stock</p>
         )}
       </div>
     </div>
