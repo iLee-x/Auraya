@@ -1,5 +1,6 @@
 import prisma from '../config/db';
 import { AppError } from '../utils/AppError';
+import { addOrderConfirmationJob } from '../workers/emailQueue';
 import {
   CheckoutInput,
   OrderQueryInput,
@@ -94,6 +95,27 @@ export const orderService = {
 
       return newOrder;
     });
+
+    // Fire-and-forget: enqueue order confirmation email
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true },
+    });
+
+    if (user) {
+      addOrderConfirmationJob({
+        orderId: order.id,
+        email: user.email,
+        customerName: user.name || '',
+        items: order.items.map((item) => ({
+          productName: item.productName,
+          quantity: item.quantity,
+          productPrice: Number(item.productPrice),
+        })),
+        totalAmount: Number(order.totalAmount),
+        shippingAddress: shippingAddress as Record<string, unknown>,
+      });
+    }
 
     return order;
   },

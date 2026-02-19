@@ -2,6 +2,8 @@ import app from './app';
 import { config, isDev } from './config';
 import prisma from './config/db';
 import { closeRedis, getRedis } from './config/redis';
+import { connectProducer, disconnectProducer } from './workers/emailQueue';
+import { startEmailWorker, closeEmailWorker } from './workers/emailWorker';
 
 const server = app.listen(config.port, () => {
   console.log(`Server running on port ${config.port} in ${config.nodeEnv} mode`);
@@ -15,6 +17,16 @@ const server = app.listen(config.port, () => {
 // Initialize Redis connection
 getRedis();
 
+// Initialize Kafka producer + consumer
+(async () => {
+  try {
+    await connectProducer();
+    await startEmailWorker();
+  } catch (err) {
+    console.error('Failed to start Kafka services:', err);
+  }
+})();
+
 // Graceful shutdown
 const gracefulShutdown = async (signal: string) => {
   console.log(`\n${signal} received. Starting graceful shutdown...`);
@@ -23,6 +35,12 @@ const gracefulShutdown = async (signal: string) => {
     console.log('HTTP server closed');
 
     try {
+      await closeEmailWorker();
+      console.log('Kafka consumer closed');
+
+      await disconnectProducer();
+      console.log('Kafka producer closed');
+
       await prisma.$disconnect();
       console.log('Database connection closed');
 
