@@ -23,6 +23,19 @@ export const config = {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
   },
 
+  ses: {
+    region: process.env.AWS_SES_REGION || 'us-east-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    from: process.env.EMAIL_FROM || 'noreply@auraya.com',
+    adminEmail: process.env.ADMIN_EMAIL || '',
+  },
+
+  kafka: {
+    brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
+    clientId: process.env.KAFKA_CLIENT_ID || 'auraya-backend',
+  },
+
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
     apiKey: process.env.CLOUDINARY_API_KEY || '',
